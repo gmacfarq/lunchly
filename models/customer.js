@@ -94,9 +94,7 @@ class Customer {
       results = await db.query(
         `SELECT id,
                     first_name AS "firstName",
-                    last_name  AS "lastName",
-                    phone,
-                    notes
+                    last_name  AS "lastName"
              FROM customers
              WHERE first_name = $1 OR last_name = $1
              ORDER BY last_name, first_name`,
@@ -108,9 +106,7 @@ class Customer {
       results = await db.query(
         `SELECT id,
                     first_name AS "firstName",
-                    last_name  AS "lastName",
-                    phone,
-                    notes
+                    last_name  AS "lastName"
              FROM customers
              WHERE first_name = $1 AND last_name = $2
              ORDER BY last_name, first_name`,
@@ -122,17 +118,19 @@ class Customer {
   }
 
   /** gets list of top 10 customers w/ most reservations */
+
   static async getBestCustomers(){
     let results = await db.query(
-      `SELECT id,
+      `SELECT customers.id, COUNT(*),
                     first_name AS "firstName",
-                    last_name  AS "lastName",
-                    phone,
-                    notes
+                    last_name  AS "lastName"
              FROM customers
-             JOIN reservations ON id=customer_id
-             ORDER BY last_name, first_name;`
+             JOIN reservations ON customers.id=customer_id
+             GROUP BY customers.id
+             ORDER BY count DESC;`
     )
+
+    return results.rows.slice(0, 10).map(c=> new Customer(c));
   }
 
   /** return full name of customer */
