@@ -57,6 +57,56 @@ class Customer {
     return new Customer(customer);
   }
 
+  /** search by firstname */
+  static async searchByFirstName(firstName) {
+    const results = await db.query(
+      `SELECT id,
+                  first_name AS "firstName",
+                  last_name  AS "lastName",
+                  phone,
+                  notes
+           FROM customers
+           WHERE first_name = $1`,
+      [firstName],
+    );
+
+    const customers = results.rows;
+    //{ id, firstName, lastName, phone, notes }
+
+    if (customer === undefined) {
+      const err = new Error(`No such customer: ${id}`);
+      err.status = 404;
+      throw err;
+    }
+
+    return customers.map(c => new Customer(c));
+  }
+
+  /** search by lastname */
+  static async searchByLastName(lastName) {
+    const results = await db.query(
+      `SELECT id,
+                  first_name AS "firstName",
+                  last_name  AS "lastName",
+                  phone,
+                  notes
+           FROM customers
+           WHERE last_name = $1`,
+      [lastName],
+    );
+
+    const customers = results.rows;
+    //{ id, firstName, lastName, phone, notes }
+
+    if (customer === undefined) {
+      const err = new Error(`No such customer: ${id}`);
+      err.status = 404;
+      throw err;
+    }
+
+    return customers.map(c => new Customer(c));
+  }
+
   /** return full name of customer */
 
   fullName() {
