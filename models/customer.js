@@ -121,6 +121,20 @@ class Customer {
     return results;
   }
 
+  /** gets list of top 10 customers w/ most reservations */
+  static async getBestCustomers(){
+    let results = await db.query(
+      `SELECT id,
+                    first_name AS "firstName",
+                    last_name  AS "lastName",
+                    phone,
+                    notes
+             FROM customers
+             JOIN reservations ON id=customer_id
+             ORDER BY last_name, first_name;`
+    )
+  }
+
   /** return full name of customer */
 
   fullName() {
