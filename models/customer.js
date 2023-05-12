@@ -4,6 +4,7 @@
 
 const db = require("../db");
 const Reservation = require("./reservation");
+const { capitalizeWords } = require("../helpers")
 
 /** Customer of the restaurant. */
 
@@ -16,18 +17,45 @@ class Customer {
     this.notes = notes;
   }
 
-  /** find all customers. */
+  /** find all customers, when not searching.
+   * find customers with matching first and/or
+   */
 
-  static async all() {
-    const results = await db.query(
-      `SELECT id,
-                  first_name AS "firstName",
-                  last_name  AS "lastName",
-                  phone,
-                  notes
-           FROM customers
-           ORDER BY last_name, first_name`,
-    );
+  static async all(fullSearch) {
+
+    let results;
+    let searchTermOne;
+    let searchTermTwo;
+
+    //When not using search bar
+    if(!fullSearch){
+      results = await db.query(
+        `SELECT id,
+                    first_name AS "firstName",
+                    last_name  AS "lastName",
+                    phone,
+                    notes
+             FROM customers
+             ORDER BY last_name, first_name`,
+      );
+    }
+
+    //when we recieve a search query
+    else{
+      fullSearch = capitalizeWords(fullSearch.split(" "))
+
+      if(fullSearch.length > 1){
+        searchTermOne = fullSearch[0];
+        searchTermTwo = fullSearch[1];
+      }
+      else{
+        searchTermOne = fullSearch[0];
+      }
+
+      results = await Customer.searchByName(searchTermOne, searchTermTwo)
+    }
+
+
     return results.rows.map(c => new Customer(c));
   }
 
@@ -57,54 +85,40 @@ class Customer {
     return new Customer(customer);
   }
 
-  /** search by firstname */
-  static async searchByFirstName(firstName) {
-    const results = await db.query(
-      `SELECT id,
-                  first_name AS "firstName",
-                  last_name  AS "lastName",
-                  phone,
-                  notes
-           FROM customers
-           WHERE first_name = $1`,
-      [firstName],
-    );
+  /** search by name */
 
-    const customers = results.rows;
-    //{ id, firstName, lastName, phone, notes }
+  static async searchByName(searchTermOne, searchTermTwo) {
+    let results;
 
-    if (customer === undefined) {
-      const err = new Error(`No such customer: ${id}`);
-      err.status = 404;
-      throw err;
+    if(!searchTermTwo){
+      results = await db.query(
+        `SELECT id,
+                    first_name AS "firstName",
+                    last_name  AS "lastName",
+                    phone,
+                    notes
+             FROM customers
+             WHERE first_name = $1 OR last_name = $1
+             ORDER BY last_name, first_name`,
+        [searchTermOne],
+      );
     }
 
-    return customers.map(c => new Customer(c));
-  }
-
-  /** search by lastname */
-  static async searchByLastName(lastName) {
-    const results = await db.query(
-      `SELECT id,
-                  first_name AS "firstName",
-                  last_name  AS "lastName",
-                  phone,
-                  notes
-           FROM customers
-           WHERE last_name = $1`,
-      [lastName],
-    );
-
-    const customers = results.rows;
-    //{ id, firstName, lastName, phone, notes }
-
-    if (customer === undefined) {
-      const err = new Error(`No such customer: ${id}`);
-      err.status = 404;
-      throw err;
+    else{
+      results = await db.query(
+        `SELECT id,
+                    first_name AS "firstName",
+                    last_name  AS "lastName",
+                    phone,
+                    notes
+             FROM customers
+             WHERE first_name = $1 AND last_name = $2
+             ORDER BY last_name, first_name`,
+        [searchTermOne, searchTermTwo],
+      );
     }
 
-    return customers.map(c => new Customer(c));
+    return results;
   }
 
   /** return full name of customer */

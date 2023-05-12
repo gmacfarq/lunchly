@@ -8,12 +8,13 @@ const { BadRequestError } = require("./expressError");
 const Customer = require("./models/customer");
 const Reservation = require("./models/reservation");
 
+
 const router = new express.Router();
 
 /** Homepage: show list of customers. */
 
 router.get("/", async function (req, res, next) {
-  const customers = await Customer.all();
+  const customers = await Customer.all(req.query.search);
   return res.render("customer_list.html", { customers });
 });
 
