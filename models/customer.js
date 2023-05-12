@@ -101,7 +101,7 @@ class Customer {
         [searchTermOne],
       );
     }
-
+    //TODO: iLike statement in solutiom: [‘%${term}%"]
     else{
       results = await db.query(
         `SELECT id,
@@ -120,7 +120,7 @@ class Customer {
   /** gets list of top 10 customers w/ most reservations */
 
   static async getBestCustomers(){
-    let results = await db.query(
+    const results = await db.query(
       `SELECT customers.id, COUNT(*),
                     first_name AS "firstName",
                     last_name  AS "lastName"
@@ -129,7 +129,7 @@ class Customer {
              GROUP BY customers.id
              ORDER BY count DESC;`
     )
-
+      //TODO: Limit to 10 from database
     return results.rows.slice(0, 10).map(c=> new Customer(c));
   }
 
